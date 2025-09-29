@@ -1,19 +1,30 @@
 package com.example.SegundoProyectoSpringMySQL.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.*;
 
-@Entity (name = "mensajes")
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "mensajes")
 public class Mensaje {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id //Clave primaria
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //Autonumérico
     private Long id;
 
-    private String tituto;
+    private String titulo;
 
     private String texto;
 
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion;
+
+    @ManyToOne
+    private Categoria categoria;
 }
