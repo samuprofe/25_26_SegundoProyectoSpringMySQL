@@ -4,12 +4,11 @@ import com.example.SegundoProyectoSpringMySQL.entities.Categoria;
 import com.example.SegundoProyectoSpringMySQL.entities.Mensaje;
 import com.example.SegundoProyectoSpringMySQL.repositories.CategoriaRepository;
 import com.example.SegundoProyectoSpringMySQL.repositories.MensajeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class MensajeController {
@@ -48,29 +47,47 @@ public class MensajeController {
         categoriaRepository.save(categoria);
     }
 
-
     @GetMapping("/mensajes")
     public List<Mensaje> findAllMensajes(){
         return mensajeRepository.findAll();
     }
 
     @GetMapping("/mensajes/{id}")
-    public Mensaje findMensajes(){
-        return new Mensaje();
+    public Mensaje findMensajes(@PathVariable Long id){
+        return mensajeRepository.findById(id).orElse(null);
+        /*
+        Optional<Mensaje> mensajeOptional = mensajeRepository.findById(id);
+        if(mensajeOptional.isPresent()){
+            return mensajeOptional.get();
+        }
+        else{   //No se ha encontrado el mensaje
+            return null;
+        }*/
     }
 
     @DeleteMapping("/mensajes/{id}")
-    public Mensaje removeMensajes(){
-        return new Mensaje();
+    public void removeMensajes(@PathVariable Long id){
+        mensajeRepository.deleteById(id);
     }
 
     @PutMapping("/mensajes/{id}")
-    public Mensaje editMensajes(@RequestBody Mensaje mensaje){
-        return new Mensaje();
+    public Mensaje editMensajes(@RequestBody Mensaje mensaje, @PathVariable Long id){
+        Optional<Mensaje> mensajeOptional = mensajeRepository.findById(id);
+        if (mensajeOptional.isPresent()){
+            Mensaje mensajeOriginal = mensajeOptional.get();
+            mensajeOriginal.setTitulo(mensaje.getTitulo());
+            mensajeOriginal.setTexto(mensaje.getTexto());
+            mensajeOriginal.setCategoria(mensaje.getCategoria());
+            return mensajeRepository.save(mensajeOriginal);
+        }
+        else{
+            return null;
+        }
     }
 
     @PostMapping("/mensajes")
     public Mensaje insertMensajes(@RequestBody Mensaje mensaje){
-        return new Mensaje();
+        return mensajeRepository.save(mensaje);
+
     }
 }
