@@ -14,13 +14,17 @@ import java.util.List;
 @RestController
 public class MensajeController {
 
-    @Autowired
+    //@Autowired no es necesario indicar aquí esta anotación poque los hemos puesto como parámetros del constructor
     MensajeRepository mensajeRepository;
-
-    @Autowired
     CategoriaRepository categoriaRepository;
 
-    public void MensajeControler(){
+    //Inyectamos los repositorios en el constructor, así Spring los crea y gestiona automáticamente).
+    public MensajeController(CategoriaRepository categoriaRepository, MensajeRepository mensajeRepository){
+
+        //Para poder acceder desde otros métodos lo asigno a la propiedad de la clase
+        this.mensajeRepository = mensajeRepository;
+        this.categoriaRepository = categoriaRepository;
+
         Categoria categoria = Categoria.builder()
                 .nombreCategoria("Móviles")
                 .mensajes(List.of(
@@ -36,6 +40,10 @@ public class MensajeController {
                                 .build()
                 ))
                 .build();
+
+        categoria.getMensajes().forEach(
+                mensaje -> mensaje.setCategoria(categoria)
+        );
 
         categoriaRepository.save(categoria);
     }
