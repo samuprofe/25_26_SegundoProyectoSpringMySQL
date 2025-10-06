@@ -4,9 +4,9 @@ import com.example.SegundoProyectoSpringMySQL.entities.Categoria;
 import com.example.SegundoProyectoSpringMySQL.entities.Mensaje;
 import com.example.SegundoProyectoSpringMySQL.repositories.CategoriaRepository;
 import com.example.SegundoProyectoSpringMySQL.repositories.MensajeRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,66 +23,54 @@ public class MensajeController {
         //Para poder acceder desde otros métodos lo asigno a la propiedad de la clase
         this.mensajeRepository = mensajeRepository;
         this.categoriaRepository = categoriaRepository;
-
-        Categoria categoria = Categoria.builder()
-                .nombreCategoria("Móviles")
-                .mensajes(List.of(
-                        Mensaje.builder()
-                                .titulo("Primer post sobre móviles")
-                                .texto("Este es el texto del primer post")
-                                .fechaCreacion(LocalDateTime.now())
-                                .build(),
-                        Mensaje.builder()
-                                .titulo("Segundo post sobre móviles")
-                                .texto("Este es el texto del segundo post")
-                                .fechaCreacion(LocalDateTime.now())
-                                .build()
-                ))
-                .build();
-
-        categoria.getMensajes().forEach(
-                mensaje -> mensaje.setCategoria(categoria)
-        );
-
-        categoriaRepository.save(categoria);
     }
 
     @GetMapping("/mensajes")
-    public List<Mensaje> findAllMensajes(){
-        return mensajeRepository.findAll();
+    public ResponseEntity<List<Mensaje>> findAllMensajes(){
+        return ResponseEntity.ok(mensajeRepository.findAll()); //OK 200
     }
 
     @GetMapping("/mensajes/{id}")
-    public Mensaje findMensajes(@PathVariable Long id){
-        return mensajeRepository.findById(id).orElse(null);
-        /*
+    public ResponseEntity<Mensaje> findMensajes(@PathVariable Long id){
+
+        //Obtendo el mensaje de la BD a partir del repositorio
         Optional<Mensaje> mensajeOptional = mensajeRepository.findById(id);
-        if(mensajeOptional.isPresent()){
-            return mensajeOptional.get();
-        }
-        else{   //No se ha encontrado el mensaje
-            return null;
-        }*/
+//        if(mensajeOptional.isPresent()){
+//            return ResponseEntity.ok(mensajeOptional.get());
+//        }
+//        else{   //No se ha encontrado el mensaje
+//           return ResponseEntity.notFound().build();
+//        }
+
+        //.map se ejecuta si se ha encontrado el mensaje
+        //.orElseGet se ejecuta si no ha encontrado el mensaje
+        return mensajeOptional
+                .map(ResponseEntity::ok)    //OK 200
+                .orElseGet(() -> ResponseEntity.notFound().build()); //Not Found 404
+
     }
 
     @DeleteMapping("/mensajes/{id}")
-    public void removeMensajes(@PathVariable Long id){
+    public ResponseEntity<Void> removeMensajes(@PathVariable Long id){
+        if(!mensajeRepository.existsById(id)) {
+            return ResponseEntity.notFound().build(); //Not Found 404
+        }
         mensajeRepository.deleteById(id);
+        return ResponseEntity.noContent().build(); //No content 204
     }
 
     @PutMapping("/mensajes/{id}")
-    public Mensaje editMensajes(@RequestBody Mensaje mensaje, @PathVariable Long id){
-        Optional<Mensaje> mensajeOptional = mensajeRepository.findById(id);
-        if (mensajeOptional.isPresent()){
-            Mensaje mensajeOriginal = mensajeOptional.get();
-            mensajeOriginal.setTitulo(mensaje.getTitulo());
-            mensajeOriginal.setTexto(mensaje.getTexto());
-            mensajeOriginal.setCategoria(mensaje.getCategoria());
-            return mensajeRepository.save(mensajeOriginal);
-        }
-        else{
-            return null;
-        }
+    public ResponseEntity<Mensaje> editMensajes(@RequestBody Mensaje mensaje, @PathVariable Long id){
+        return mensajeRepository.findById(id)
+                .map(mensajeOriginal -> {
+                    mensajeOriginal.setTitulo(mensaje.getTitulo());
+                    mensajeOriginal.setTexto(mensaje.getTexto());
+                    mensajeOriginal.setCategoria(mensaje.getCategoria());
+                    return ResponseEntity.ok(mensajeRepository.save(mensajeOriginal));
+                })
+                .orElseGet(() -> {
+                    return ResponseEntity.notFound().build();
+                });
     }
 
     @PostMapping("/mensajes")
