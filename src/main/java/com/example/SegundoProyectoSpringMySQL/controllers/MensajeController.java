@@ -6,7 +6,9 @@ import com.example.SegundoProyectoSpringMySQL.repositories.CategoriaRepository;
 import com.example.SegundoProyectoSpringMySQL.repositories.MensajeRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriBuilder;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,7 +77,7 @@ public class MensajeController {
 
     @PostMapping("/mensajes")
     public Mensaje insertMensajes(@RequestBody Mensaje mensaje){
-        return mensajeRepository.save(mensaje);
+        return  mensajeRepository.save(mensaje);
 
     }
 }
