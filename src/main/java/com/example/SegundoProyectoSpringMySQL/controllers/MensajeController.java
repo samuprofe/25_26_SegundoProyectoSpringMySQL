@@ -12,6 +12,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
+
 @RestController
 public class MensajeController {
 
@@ -29,7 +30,12 @@ public class MensajeController {
 
     @GetMapping("/mensajes")
     public ResponseEntity<List<Mensaje>> findAllMensajes(){
-        return ResponseEntity.ok(mensajeRepository.findAll()); //OK 200
+        List<Mensaje> mensajes = mensajeRepository.findAll();
+        if (mensajes.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 No Content si no hay mensajes
+        }
+
+        return ResponseEntity.ok(mensajes); //200 OK con todos los mensajes en el body
     }
 
     @GetMapping("/mensajes/{id}")
@@ -47,7 +53,7 @@ public class MensajeController {
         //.map se ejecuta si se ha encontrado el mensaje
         //.orElseGet se ejecuta si no ha encontrado el mensaje
         return mensajeOptional
-                .map(ResponseEntity::ok)    //OK 200
+                .map(ResponseEntity::ok)//OK 200
                 .orElseGet(() -> ResponseEntity.notFound().build()); //Not Found 404
 
     }
@@ -75,9 +81,18 @@ public class MensajeController {
                 });
     }
 
+    //POST localhost:8080/mensajes con el mensaje en json en el body
+    //Debe devolver la URI donde se encuentra el mensaje en la cabecera Location
     @PostMapping("/mensajes")
-    public Mensaje insertMensajes(@RequestBody Mensaje mensaje){
-        return  mensajeRepository.save(mensaje);
-
+    public ResponseEntity<Void> insertMensajes(@RequestBody Mensaje mensaje){
+        Mensaje mensajeGuardado = mensajeRepository.save(mensaje);
+        URI uriMensaje = URI.create("/mensajes/"+mensajeGuardado.getId());
+        return ResponseEntity.created(uriMensaje).build();
     }
 }
+
+
+//CategoriaController incluyendo añadir y quitar mensaje de la categoria
+//de la forma POST /categoria/5/mensaje/1 y DELETE /categoria/5/mensaje/1
+//Crear comentarios a los mensajes
+//Crear usuarios y likes a los mensajes
