@@ -72,13 +72,13 @@ public class CategoriaController {
     @PostMapping("/categorias/{categoriaId}/mensajes/{mensajeId}")
     public ResponseEntity<Void> addMensajeToCategoria(@PathVariable Long categoriaId, @PathVariable Long mensajeId) {
 
-
+        return null;
     }
 
     // Quitar un mensaje de la categoría
     @DeleteMapping("/categorias/{categoriaId}/mensajes/{mensajeId}")
     public ResponseEntity<Void> removeMensajeFromCategoria(@PathVariable Long categoriaId, @PathVariable Long mensajeId) {
-
+        return null;
     }
 }
 

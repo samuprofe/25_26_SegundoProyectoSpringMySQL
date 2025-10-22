@@ -1,15 +1,23 @@
 package com.example.SegundoProyectoSpringMySQL.controllers;
 
+import com.example.SegundoProyectoSpringMySQL.DTO.MensajeDTO;
 import com.example.SegundoProyectoSpringMySQL.entities.Categoria;
 import com.example.SegundoProyectoSpringMySQL.entities.Mensaje;
 import com.example.SegundoProyectoSpringMySQL.repositories.CategoriaRepository;
 import com.example.SegundoProyectoSpringMySQL.repositories.MensajeRepository;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriBuilder;
 
+
+import org.springframework.data.domain.Pageable;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 
@@ -36,6 +44,46 @@ public class MensajeController {
         }
 
         return ResponseEntity.ok(mensajes); //200 OK con todos los mensajes en el body
+    }
+
+    @GetMapping("/mensajespaginados")
+    public ResponseEntity<Page<Mensaje>> findAllMensajesPaginados(
+            @PageableDefault(page = 0,size=5,sort="fechaCreacion",direction = Sort.Direction.DESC)
+            Pageable pageable
+    ){
+        Page<Mensaje> mensajes = mensajeRepository.findAll(pageable);
+        if (mensajes.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 No Content si no hay mensajes
+        }
+
+        return ResponseEntity.ok(mensajes); //200 OK con todos los mensajes en el body
+    }
+
+    @GetMapping("/mensajesSimple")
+    public ResponseEntity<List<MensajeDTO>> findAllMensajesSimple(){
+        List<Mensaje> mensajes = mensajeRepository.findAll();
+        List<MensajeDTO> mensajesDTO = new ArrayList<>();
+
+        mensajes.forEach(mensaje -> {
+            String nombreCategoria="Sin categoria";
+            if(mensaje.getCategoria()!=null){
+                nombreCategoria=mensaje.getCategoria().getNombreCategoria();
+            }
+            mensajesDTO.add(
+                    MensajeDTO.builder()
+                    .id(mensaje.getId())
+                    .titulo(mensaje.getTitulo())
+                    .texto(mensaje.getTexto())
+                            .build());
+                     //new MensajeDTO(mensaje.getId(),mensaje.getTitulo(),mensaje.getTexto(), mensaje.getCategoria().getNombreCategoria())
+        });
+
+
+        if (mensajesDTO.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 No Content si no hay mensajes
+        }
+
+        return ResponseEntity.ok(mensajesDTO); //200 OK con todos los mensajes en el body
     }
 
     @GetMapping("/mensajes/{id}")
@@ -68,7 +116,7 @@ public class MensajeController {
     }
 
     @PutMapping("/mensajes/{id}")
-    public ResponseEntity<Mensaje> editMensajes(@RequestBody Mensaje mensaje, @PathVariable Long id){
+    public ResponseEntity<Mensaje> editMensajes(@Valid @RequestBody Mensaje mensaje, @PathVariable Long id){
         return mensajeRepository.findById(id)
                 .map(mensajeOriginal -> {
                     mensajeOriginal.setTitulo(mensaje.getTitulo());
@@ -84,7 +132,7 @@ public class MensajeController {
     //POST localhost:8080/mensajes con el mensaje en json en el body
     //Debe devolver la URI donde se encuentra el mensaje en la cabecera Location
     @PostMapping("/mensajes")
-    public ResponseEntity<Void> insertMensajes(@RequestBody Mensaje mensaje){
+    public ResponseEntity<Void> insertMensajes(@Valid @RequestBody Mensaje mensaje){
         Mensaje mensajeGuardado = mensajeRepository.save(mensaje);
         URI uriMensaje = URI.create("/mensajes/"+mensajeGuardado.getId());
         return ResponseEntity.created(uriMensaje).build();
