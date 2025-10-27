@@ -9,7 +9,4 @@ public class MensajeDTO {
     private String titulo;
     private String texto;
     private String nombreCategoria;
-
-
-
 }

@@ -1,8 +1,7 @@
 package com.example.SegundoProyectoSpringMySQL.controllers;
 
 import com.example.SegundoProyectoSpringMySQL.entities.Categoria;
-import com.example.SegundoProyectoSpringMySQL.repositories.CategoriaRepository;
-import com.example.SegundoProyectoSpringMySQL.repositories.MensajeRepository;
+import com.example.SegundoProyectoSpringMySQL.services.CategoriaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,20 +10,19 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/categorias")
 public class CategoriaController {
 
-    private final CategoriaRepository categoriaRepository;
-    private final MensajeRepository mensajeRepository;
+    private final CategoriaService categoriaService;
 
-    public CategoriaController(CategoriaRepository categoriaRepository, MensajeRepository mensajeRepository) {
-        this.categoriaRepository = categoriaRepository;
-        this.mensajeRepository = mensajeRepository;
+    public CategoriaController(CategoriaService categoriaService) {
+        this.categoriaService = categoriaService;
     }
 
     // Listar todas las categorías
-    @GetMapping("/categorias")
+    @GetMapping
     public ResponseEntity<List<Categoria>> findAllCategorias() {
-        List<Categoria> categorias = categoriaRepository.findAll();
+        List<Categoria> categorias = categoriaService.findAllCategorias();
         if (categorias.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -32,56 +30,47 @@ public class CategoriaController {
     }
 
     // Obtener una categoría por ID
-    @GetMapping("/categorias/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Categoria> findCategoriaById(@PathVariable Long id) {
-        Optional<Categoria> categoria = categoriaRepository.findById(id);
+        Optional<Categoria> categoria = categoriaService.findCategoriaById(id);
         return categoria.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // Crear una categoría
-    @PostMapping("/categorias")
+    @PostMapping
     public ResponseEntity<Void> createCategoria(@RequestBody Categoria categoria) {
-        Categoria categoriaGuardada = categoriaRepository.save(categoria);
+        Categoria categoriaGuardada = categoriaService.createCategoria(categoria);
         URI uri = URI.create("/categorias/" + categoriaGuardada.getId());
         return ResponseEntity.created(uri).build();
     }
 
     // Actualizar una categoría
-    @PutMapping("/categorias/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Categoria> updateCategoria(@PathVariable Long id, @RequestBody Categoria categoria) {
-        return categoriaRepository.findById(id)
-                .map(existing -> {
-                    existing.setNombreCategoria(categoria.getNombreCategoria());
-                    return ResponseEntity.ok(categoriaRepository.save(existing));
-                })
+        Optional<Categoria> updated = categoriaService.updateCategoria(id, categoria);
+        return updated.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // Eliminar una categoría
-    @DeleteMapping("/categorias/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategoria(@PathVariable Long id) {
-        if (!categoriaRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        categoriaRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        boolean deleted = categoriaService.deleteCategoria(id);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
-    // Añadir un mensaje a la categoría
-    @PostMapping("/categorias/{categoriaId}/mensajes/{mensajeId}")
+    // Añadir un mensaje a una categoría
+    @PostMapping("/{categoriaId}/mensajes/{mensajeId}")
     public ResponseEntity<Void> addMensajeToCategoria(@PathVariable Long categoriaId, @PathVariable Long mensajeId) {
-
-        return null;
+        boolean added = categoriaService.addMensajeToCategoria(categoriaId, mensajeId);
+        return added ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
     // Quitar un mensaje de la categoría
-    @DeleteMapping("/categorias/{categoriaId}/mensajes/{mensajeId}")
+    @DeleteMapping("/{categoriaId}/mensajes/{mensajeId}")
     public ResponseEntity<Void> removeMensajeFromCategoria(@PathVariable Long categoriaId, @PathVariable Long mensajeId) {
-        return null;
+        boolean removed = categoriaService.removeMensajeFromCategoria(categoriaId, mensajeId);
+        return removed ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }
-
-//Crear CategoriaController
-//Incluir añadir un mensaje a una categoria y borrar un mensaje de una categoria
-//Crear
