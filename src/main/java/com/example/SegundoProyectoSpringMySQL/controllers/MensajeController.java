@@ -74,6 +74,7 @@ public class MensajeController {
                     .id(mensaje.getId())
                     .titulo(mensaje.getTitulo())
                     .texto(mensaje.getTexto())
+                            .nombreCategoria(mensaje.getCategoria().getNombreCategoria())
                             .build());
                      //new MensajeDTO(mensaje.getId(),mensaje.getTitulo(),mensaje.getTexto(), mensaje.getCategoria().getNombreCategoria())
         });
@@ -137,6 +138,18 @@ public class MensajeController {
         URI uriMensaje = URI.create("/mensajes/"+mensajeGuardado.getId());
         return ResponseEntity.created(uriMensaje).build();
     }
+
+    //POST localhost:8080/mensajes
+    //MensajeRequest(titulo,texto,id_categoria)
+//    @PostMapping("/mensajes")
+//    public ResponseEntity<Void> insertMensajeV2(@Valid @RequestBody MensajeRequest mensajeRequest){
+//        //Crear un objeto de la clase Mensaje
+//        //Asignarle la categoria
+//
+//        Mensaje mensajeGuardado = mensajeRepository.save(mensaje);
+//        URI uriMensaje = URI.create("/mensajes/"+mensajeGuardado.getId());
+//        return ResponseEntity.created(uriMensaje).build();
+//    }
 }
 
 
