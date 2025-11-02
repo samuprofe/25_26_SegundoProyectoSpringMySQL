@@ -73,3 +73,10 @@ public class Usuario implements UserDetails {
         return true;
     }
 }
+
+
+//¿Porqué si se reinicia el servidor dejan de funcionar los token?
+//¿Dónde guardar los tokens en el cliente? ¿Cómo se cierra sesión?
+//Quien puede insertar, listar, ver y borrar mensajes? (borrar admin y el propio usuario)
+//¿Qué pasa si nos registramos con el mismo email 2 veces?
+//Añadir relación entre usuarios y mensajes. Al insertar una reserva que se asigne el id del usuario conectado //¿Guardar el id en el token?
